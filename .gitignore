@@ -2,3 +2,4 @@ $ git status
 # Untracked files:
 data_preprocessing/*.db
 data/*.csv
+data/
