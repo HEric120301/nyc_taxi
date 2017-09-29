@@ -1,1 +1,5 @@
-1. when dragging: change cursor and duplicate the start zone and cahnge it's position with the mouse, and highlight both start and end zone when dragend
+1. [Done]when dragging: change cursor and duplicate the start zone and cahnge it's position with the mouse, and highlight both start and end zone when dragend
+
+2. [Done]add pan and zoom to choropleth since line plot could use more space
+
+3. 

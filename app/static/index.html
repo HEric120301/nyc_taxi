@@ -13,31 +13,19 @@
 
     <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
     <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
-
-<style>
-
-</style>
-
   </head>
 <body>
-  <div>
-
+  <div id="choropleth_map">
     <svg style="float:left"></svg>
-<!--     <div class="btn-group" id="startEndBt" style="float:left; position: absolute; left:20px; top:20px">
-      <button type="button" class="btn btn-primary">Start</button>
-      <button type="button" class="btn btn-primary">End</button>
-    </div>
- -->
- <label class="checkbox-inline" style="float:left; position: absolute; left:40px; top:20px">
-    <input type="checkbox" checked data-toggle="toggle" data-on="Start" data-off="End" data-onstyle="success" data-offstyle="info" >
-</label>
-
-
+    <label class="checkbox-inline" style="float:left; position: absolute; left:40px; top:20px">
+      <input id="endpoint-event" type="checkbox" checked data-toggle="toggle" data-on="Start" data-off="End" data-onstyle="success" data-offstyle="info" >
+    </label>
   </div>
-
+  <div id="line_plot">
+    <svg></svg>
+  </div>
 </body>
 </html>
-
 <script>
 var count_each_zone = {},
   pudo_location = {'pick_up': '', 'drop_off': ''},
@@ -45,8 +33,8 @@ var count_each_zone = {},
   current_zone = undefined,
   show_st_or_end = 'pick_up';
 
-var width = 800,
-    height = 700,
+var width = 600,
+    height = 500,
     centered;
 
 // Define color scale
@@ -57,7 +45,7 @@ var color = d3.scalePow()
   .range(['#fff', '#409A99']);
 
 var projection = d3.geoMercator()
-  .scale(65000)
+  .scale(40000)
   // Center the Map in Colombia
   .center([-74, 40.7])
   .translate([width / 2, height / 2]);
@@ -66,26 +54,29 @@ var path = d3.geoPath()
   .projection(projection);
 
 // Set svg width & height
-var svg = d3.select('svg')
+var svg = d3.select('#choropleth_map svg')
   .attr('width', width)
   .attr('height', height);
-
 
 // Add background
 svg.append('rect')
   .attr('class', 'background')
   .attr('width', width)
   .attr('height', height)
+
   .on('click', clicked);
 
 //add tip text
 var tip = svg.append('text')
-  .attr('x', 200)
+  .attr('x', 140)
   .attr('y', 50)
   .text('')
   .attr('id', 'tip')
   .style('font-size', 20)
 
+svg = svg.call(d3.zoom().on("zoom", function () {
+    svg.attr("transform", d3.event.transform)
+ })).append('g')
 var g = svg.append('g');
 
 var mapLayer = g.append('g')
@@ -96,14 +87,26 @@ d3.json('data/count_each_zone.json', d=>{
 
   count_each_zone = d;
 
-  d3.json('data/nyc.json', (error, mapData)=>{
+  d3.json('data/nyc.geo.json', (error, mapData)=>{
     var features = mapData.features;
 
+    draw_map(features);
+    //toggle between two endpoints
+    $('#endpoint-event').change(function() {
+      if($(this).prop('checked')) show_st_or_end = 'pick_up'
+      else show_st_or_end = 'drop_off'
+        draw_map(features)
+    })
+  });
+
+})
+
+function draw_map(features) {
     // Update color scale domain based on data
     color.domain([d3.min(features, zone_count), d3.max(features, zone_count)]);
-    // Draw each province as a path
-    mapLayer.selectAll('path')
-        .data(features)
+    // Draw each zone as a path
+    mapLayer.selectAll('path').remove()
+    mapLayer.selectAll('path').data(features)
         .enter().append('path')
         .attr('d', path)
         .attr('vector-effect', 'non-scaling-stroke')
@@ -115,52 +118,49 @@ d3.json('data/count_each_zone.json', d=>{
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended));
-  });
 
-})
+}
 
 function init_drag(d) {
   mapLayer.selectAll('path').classed('start_zone', false)
   mapLayer.selectAll('path').classed('end_zone', false)
-
   pudo_location = {'pick_up': '', 'drop_off': ''};
 }
 
 function dragstarted(d) {
   init_drag(d)
-
+  mapLayer.selectAll('path').style('cursor', 'pointer')
   d3.select(this).classed('start_zone', true);
-  var points = d3.mouse(this)
   pudo_location['pick_up'] = d.properties.zone;
   dragging = true;
 
-  // var clone = (this).cloneNode(true);
-  // this.parentNode.appendChild(clone)
-  d3.select(this.parentNode).append('circle').attr('cx', points[0]).attr('cy', points[1]).attr('r', 5).attr('id', 'tip_point').classed('prompt_point_show', true).style('cursor', 'pointer')
+  var points = d3.mouse(this)
+  mapLayer.append('circle').attr('cx', points[0]).attr('cy', points[1]).attr('r', 5).attr('id', 'tip_point').classed('prompt_point_show', true)
 }
 
 function dragged(d) {
-  d3.select(this.parentNode).select('#tip_point')
-    .attr("cx", d=>{ return d3.mouse(this)[0]}).attr("cy", d=>{ return d3.mouse(this)[1]}).style('pointer-events','none').style('cursor', 'pointer');
+  mapLayer.select('#tip_point')
+    .attr("cx", d=>{ return d3.mouse(this)[0]}).attr("cy", d=>{ return d3.mouse(this)[1]}).style('pointer-events','none')
 }
 
 function dragended(d) {
+  mapLayer.selectAll('path').style('cursor', 'default')
   d3.select(current_zone).classed('end_zone', true)
- 
-  d3.select(this.parentNode).select("#tip_point").remove();
   pudo_location['drop_off'] = d.properties.zone;
   dragging = false;
+ 
+  mapLayer.select("#tip_point").remove();
 }
 
 function mouseover(d){
-  // Highlight hovered province
+  // Highlight hovered zone
   d3.select(this).style('fill', 'orange');
   if(dragging) {
     pudo_location['drop_off'] = d.properties.zone;
   }
 
   current_zone = this;
-
+  //show zone infor when hovering
   d3.select('#tip').text(d.properties.zone + ': ' + zone_count(d))
 
 }
@@ -176,14 +176,23 @@ function zone_count(d){
   return count_each_zone[d.properties.zone][show_st_or_end]
 }
 
-// Get province color
+// Get zone color
 function fillFn(d){
   return color(zone_count(d));
 }
 
-// When clicked, zoom in
+// When clicked, initial map
 function clicked(d) {
   init_drag(d);
+  d3.select('#tip').text('')
 }
+
+//line_plot
+var width = 500,
+  height = 500;
+var line_svg = d3.select('#line_plot svg').attr('width', width).attr('height',height)
+
+line_svg.append('circle').attr('cx', 200).attr('cy', 200).attr('r',50).attr('fill', 'red')
+
 
 </script>

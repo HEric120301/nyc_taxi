@@ -19,8 +19,10 @@ text.big-text{
 }
 
 .prompt_point_show{
-  fill: red;
+  fill: white;
   opacity: 50%;
+  stroke-width:2px;
+  stroke: lightblue
 }
 
 .start_zone, .end_zone{
