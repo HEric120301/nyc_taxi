@@ -1,0 +1,412 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"table",
+				"table_name\tparam"
+			],
+			[
+				"sql",
+				"sql_text\tstatement"
+			],
+			[
+				"data",
+				"data_collection\tfunction"
+			],
+			[
+				"crea",
+				"create_db\tfunction"
+			],
+			[
+				"js",
+				"jsonify\tfunction"
+			],
+			[
+				"my",
+				"myWelcome"
+			],
+			[
+				"stem",
+				"stem_dateset"
+			],
+			[
+				"re",
+				"rest_digit"
+			],
+			[
+				"fi",
+				"first_digit"
+			],
+			[
+				"pr",
+				"prices"
+			],
+			[
+				"get",
+				"getBBox"
+			],
+			[
+				"font",
+				"font-size"
+			],
+			[
+				"sele",
+				"selectedPoints"
+			],
+			[
+				"fun",
+				"function"
+			],
+			[
+				"sch",
+				"schemaTable"
+			],
+			[
+				"at",
+				"attribute"
+			],
+			[
+				"attr",
+				"attributes"
+			],
+			[
+				"circl",
+				"circleData"
+			],
+			[
+				"corr",
+				"corrToTarget"
+			],
+			[
+				"cir",
+				"circles"
+			],
+			[
+				"cr",
+				"circles"
+			],
+			[
+				"bru",
+				"brushed"
+			],
+			[
+				"mouse",
+				"mouseleave"
+			],
+			[
+				"mou",
+				"mouseover"
+			],
+			[
+				"ci",
+				"circle"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 89.0,
+		"last_filter": "anaconda: lin",
+		"selected_items":
+		[
+			[
+				"anaconda: lin",
+				"Anaconda: Disable linting on this file"
+			],
+			[
+				"anaconda",
+				"Anaconda: Show error list"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 412.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"Package Control.sublime-package",
+			"import urllib.request,os,hashlib; h = 'df21e130d211cfc94d9b0905775a7c0f' + '1e3d39e33b79698005270310898eea76'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/qingfenghan/Desktop/flask/app/static/index.html",
+		"/Users/qingfenghan/Desktop/Bosch/intern/03_hidimensional_data/proto/data_collection.py",
+		"/Users/qingfenghan/Desktop/Bosch/intern/03_hidimensional_data/proto/app/views.py",
+		"/Users/qingfenghan/Documents/taxi_ana/app/static/welcome.htm",
+		"/Users/qingfenghan/Documents/GitHub/a5-HEric1203/index.html",
+		"/Users/qingfenghan/Documents/index.html",
+		"/Users/qingfenghan/Documents/my-app/src/app/index.html",
+		"/Users/qingfenghan/Documents/my-app/src/app/view.py",
+		"/Users/qingfenghan/Documents/my-app/src/app/run.py",
+		"/Users/qingfenghan/Documents/my-app/src/app/welcome.htm",
+		"/Users/qingfenghan/Documents/GitHub/a3-HEric120301/README.md",
+		"/Users/qingfenghan/Documents/GitHub/a5-HEric1203/dataset.csv",
+		"/Users/qingfenghan/Documents/GitHub/a5-HEric1203/country_data.csv",
+		"/Users/qingfenghan/Desktop/data_wrangle/datawrangle_nighttime.R",
+		"/Users/qingfenghan/Desktop/data_wrangle/1205_daytime.R",
+		"/Users/qingfenghan/Desktop/data_wrangle/datawrangledaytime.R",
+		"/Users/qingfenghan/Desktop/data_wrangle/1205_nighttime.R",
+		"/Users/qingfenghan/Desktop/datawrangle_nighttime.R",
+		"/Users/qingfenghan/Desktop/datawrangledaytime.R",
+		"/Users/qingfenghan/Desktop/datawrangle.r",
+		"/Users/qingfenghan/Downloads/datawrangle",
+		"/Users/qingfenghan/Desktop/inf554/RStudio/RTL15/RTL15030200.log.gz",
+		"/Users/qingfenghan/Downloads/index.html",
+		"/Users/qingfenghan/Desktop/t.html",
+		"/Users/qingfenghan/Desktop/capture/Screen Shot of amazon application status.png",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/README.md",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/ASSIGNMENT.md",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/index.html",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/chart2/index.html",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/chart3/index.html",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/chart1/index.html",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/chart2/style.css",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/chart3/chart.js",
+		"/Users/qingfenghan/Documents/GitHub/a2-HEric120301/hw2/chart3/style.css",
+		"/Users/qingfenghan/Desktop/app/circlesvg.svg",
+		"/Users/qingfenghan/Desktop/app/prototype.svg",
+		"/Users/qingfenghan/Desktop/myapp/app.js",
+		"/Users/qingfenghan/Desktop/vanilaNode/index.html",
+		"/Users/qingfenghan/Desktop/vanilaNode/gulpfile.js",
+		"/Users/qingfenghan/Desktop/myapp/index.html",
+		"/Users/qingfenghan/Desktop/myapp/index.htm",
+		"/Users/qingfenghan/Downloads/ESTAT+NAMAIN_IDC_N+1.4_2017_08_31_09_28_15.query.xml",
+		"/Users/qingfenghan/Desktop/node_test.js",
+		"/Users/qingfenghan/Desktop/1.html",
+		"/Users/qingfenghan/Documents/GitHub/a1-HEric120301/README.md",
+		"/Users/qingfenghan/Desktop/hw1/HW1.html",
+		"/Users/qingfenghan/Desktop/app/static/src/app.js",
+		"/Volumes/PVis2016/hd/app/static/index.html",
+		"/Users/qingfenghan/Desktop/hd/app\\static\\data\\hqf_test2.schema.json",
+		"/Users/qingfenghan/Downloads/review.text",
+		"/Users/qingfenghan/Desktop/hd/app/static/css/style.scss",
+		"/Users/qingfenghan/Desktop/hd/app/static/css/style copy.scss",
+		"/Users/qingfenghan/Desktop/test.html",
+		"/Volumes/PVis2016/hd/app/static/src/app.js",
+		"/Users/qingfenghan/Desktop/03_hidimensional_data/proto/app/static/index.html",
+		"/Users/qingfenghan/Desktop/tt.html",
+		"/Users/qingfenghan/Desktop/03_hidimensional_data/proto/app/static/css/style.css",
+		"/Users/qingfenghan/Desktop/03_hidimensional_data/proto/app/static/src/app.js",
+		"/Users/qingfenghan/Downloads/proto/app/views.py",
+		"/Applications/dev/play-java/app/controllers/HomeController.java",
+		"/Users/qingfenghan/Desktop/java_fileUpload/examples/hello world.java",
+		"/Applications/tomcat/conf/web.xml",
+		"/Users/qingfenghan/Desktop/java_fileUpload/fileUpload.html",
+		"/Applications/tomcat/conf/server.xml",
+		"/Applications/tomcat/conf/tomcat-users.xml",
+		"/Applications/tomcat/conf/context.xml",
+		"/Users/qingfenghan/Desktop/LC_summer/python_LC/def removeDuplicates(nums):.py",
+		"/Users/qingfenghan/Desktop/LC_summer/python_LC/def twoSum(nums, target):",
+		"/Users/qingfenghan/Desktop/Python/flasktest.py",
+		"/Users/qingfenghan/Desktop/Python/python notes",
+		"/Users/qingfenghan/Desktop/Python/test.py",
+		"/Users/qingfenghan/Desktop/test.py",
+		"/Users/qingfenghan/Desktop/585final/test.py",
+		"/Users/qingfenghan/Desktop/585final/Review Bullets",
+		"/Users/qingfenghan/Desktop/585final/BI",
+		"/Users/qingfenghan/Desktop/HW4/BI",
+		"/Users/qingfenghan/Desktop/HW4/hw4-nb.ipynb",
+		"/Users/qingfenghan/Desktop/570/Greedy",
+		"/Users/qingfenghan/Desktop/570/DP",
+		"/Users/qingfenghan/Desktop/570/MST, HC & TSP",
+		"/Users/qingfenghan/Desktop/570/NP.txt",
+		"/Users/qingfenghan/Desktop/bonus2.pig",
+		"/Users/qingfenghan/Desktop/countChars_Bonus.pig",
+		"/Users/qingfenghan/Desktop/charCount.pig",
+		"/Users/qingfenghan/Desktop/HW3/countChars_Bonus.pig",
+		"/Users/qingfenghan/Desktop/HW3/countCharsBonus2.pig",
+		"/Users/qingfenghan/Desktop/HW3/customer.txt",
+		"/Users/qingfenghan/Desktop/HW3/purchase.txt",
+		"/Users/qingfenghan/Desktop/HW3/countChars.pig",
+		"/Users/qingfenghan/Desktop/HW3/test.pig",
+		"/Users/qingfenghan/Desktop/HW3/countChars_Bonus_2.pig",
+		"/Users/qingfenghan/Desktop/HW3/para2.txt",
+		"/Users/qingfenghan/Desktop/HW3/para5.txt",
+		"/Users/qingfenghan/Desktop/HW3/para6.txt",
+		"/Users/qingfenghan/Desktop/HW3/para4.txt",
+		"/Users/qingfenghan/Desktop/HW3/para3.txt",
+		"/Users/qingfenghan/Desktop/HW3/p1_test.pig",
+		"/Users/qingfenghan/Desktop/p1.txt",
+		"/Users/qingfenghan/Downloads/d3 (1)/d3.js",
+		"/Users/qingfenghan/Desktop/585 HW2/submite/textFile.text",
+		"/Users/qingfenghan/Desktop/585 HW2/starter.kml",
+		"/Users/qingfenghan/Library/Containers/com.tencent.xinWeChat/Data/Library/Application Support/com.tencent.xinWeChat/2.0b4.0.9/501f23a57d5fecc2e5966424cabeb17d/Message/MessageTemp/7d8eca4f317a75f93a4b09a0e9353db1/File/spiro.html",
+		"/Users/qingfenghan/Desktop/hw2.kml",
+		"/Users/qingfenghan/Desktop/585 HW2/polygon.kml",
+		"/Users/qingfenghan/Desktop/585 HW2/Neighbors.kml",
+		"/Users/qingfenghan/Desktop/570/heap-pathO",
+		"/Users/qingfenghan/Desktop/Java ",
+		"/Users/qingfenghan/Desktop/Interview preparation for Bosch",
+		"/Users/qingfenghan/Desktop/585/HW1/Q4.sql",
+		"/Users/qingfenghan/Desktop/585/HW1/Q3.sql",
+		"/Users/qingfenghan/Desktop/585/HW1/Q2.sql",
+		"/Users/qingfenghan/Desktop/BFS/Course Schedule.java",
+		"/Users/qingfenghan/Desktop/BFS/Binary Tree Level Order Traversal.java",
+		"/Users/qingfenghan/Desktop/448. Find All Numbers Disappeared in an Array.java",
+		"/Volumes/MACOS/大学的脚印/大四下/数据库系统/数据库大作业_3130000071_韩青烽/activity/index.php",
+		"/Users/qingfenghan/Desktop/BS/153. Find Minimum in Rotated Sorted Array.java",
+		"/Users/qingfenghan/Desktop/162. Find Peak Element.java",
+		"/Users/qingfenghan/Desktop/minimumTotal(triangle).java",
+		"/Users/qingfenghan/Desktop/153. Find Minimum in Rotated Sorted Array.java",
+		"/Users/qingfenghan/Desktop/Divide two int",
+		"/Users/qingfenghan/Desktop/455/PA4/RandomTextGenerator.java",
+		"/Users/qingfenghan/Desktop/Hello.java",
+		"/Users/qingfenghan/Desktop/test.java",
+		"/Users/qingfenghan/Desktop/Solution.java",
+		"/Users/qingfenghan/Desktop/linkedlist-C++.cpp",
+		"/Users/qingfenghan/Desktop/CS571 review"
+	],
+	"find":
+	{
+		"height": 26.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "__init__.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": false,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"1205_daytime.R"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 241.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

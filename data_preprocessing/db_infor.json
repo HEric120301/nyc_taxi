@@ -1,0 +1,13 @@
+Data_files: ['../data/yellow_tripdata_2017-01.csv']
+
+Attributes: {
+	VenderID,
+	lpep_pickup_datetime,
+	lpep_dropoff_datetime,
+	PULocationID,
+	PULocation,
+	PUBorough,
+	DOLocationID,
+	DOLocation,
+	DOBorough
+}
