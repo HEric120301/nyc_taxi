@@ -40,7 +40,7 @@ text.big-text{
 <script>
 
 var width = 960,
-    height = 500,
+    height = 700,
     centered;
 
 // Define color scale
@@ -69,7 +69,7 @@ svg.append('rect')
   .attr('class', 'background')
   .attr('width', width)
   .attr('height', height)
-  // .on('click', clicked);
+  .on('click', clicked);
 
 var g = svg.append('g');
 
@@ -102,13 +102,6 @@ d3.json('nyc.json', function(error, mapData) {
     }
   )
 
-  for(var i=0; i<33; i++) {
-    // console.log(i)
-    console.log(JSON.stringify(features[i].geometry)==JSON.stringify(features0[i].geometry))
-  }
-  console.log(features[1].geometry)
-  console.log(features0[1].geometry)
-
   // Update color scale domain based on data
   color.domain([0, d3.max(features, nameLength)]);
 
@@ -121,12 +114,11 @@ d3.json('nyc.json', function(error, mapData) {
       .style('fill', fillFn)
       .on('mouseover', mouseover)
       .on('mouseout', mouseout)
-      // .on('click', clicked);
+      .on('click', clicked);
 });
 
 // Get province name
 function nameFn(d){
-  // console.log(d.geometry.coordinates)
   return "jojojo";
 }
 
@@ -195,113 +187,113 @@ function mouseout(d){
 // Just me playing around.
 // You won't need this for a regular map.
 
-// var BASE_FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+var BASE_FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
-// var FONTS = [
-//   "Open Sans",
-//   "Josefin Slab",
-//   "Arvo",
-//   "Lato",
-//   "Vollkorn",
-//   "Abril Fatface",
-//   "Old StandardTT",
-//   "Droid+Sans",
-//   "Lobster",
-//   "Inconsolata",
-//   "Montserrat",
-//   "Playfair Display",
-//   "Karla",
-//   "Alegreya",
-//   "Libre Baskerville",
-//   "Merriweather",
-//   "Lora",
-//   "Archivo Narrow",
-//   "Neuton",
-//   "Signika",
-//   "Questrial",
-//   "Fjalla One",
-//   "Bitter",
-//   "Varela Round"
-// ];
+var FONTS = [
+  "Open Sans",
+  "Josefin Slab",
+  "Arvo",
+  "Lato",
+  "Vollkorn",
+  "Abril Fatface",
+  "Old StandardTT",
+  "Droid+Sans",
+  "Lobster",
+  "Inconsolata",
+  "Montserrat",
+  "Playfair Display",
+  "Karla",
+  "Alegreya",
+  "Libre Baskerville",
+  "Merriweather",
+  "Lora",
+  "Archivo Narrow",
+  "Neuton",
+  "Signika",
+  "Questrial",
+  "Fjalla One",
+  "Bitter",
+  "Varela Round"
+];
 
-// function textArt(text){
-//   // Use random font
-//   var fontIndex = Math.round(Math.random() * FONTS.length);
-//   var fontFamily = FONTS[fontIndex] + ', ' + BASE_FONT;
+function textArt(text){
+  // Use random font
+  var fontIndex = Math.round(Math.random() * FONTS.length);
+  var fontFamily = FONTS[fontIndex] + ', ' + BASE_FONT;
 
-//   bigText
-//     .style('font-family', fontFamily)
-//     .text(text);
+  bigText
+    .style('font-family', fontFamily)
+    .text(text);
 
-//   // Use dummy text to compute actual width of the text
-//   // getBBox() will return bounding box
-//   dummyText
-//     .style('font-family', fontFamily)
-//     .text(text);
-//   var bbox = dummyText.node().getBBox();
+  // Use dummy text to compute actual width of the text
+  // getBBox() will return bounding box
+  dummyText
+    .style('font-family', fontFamily)
+    .text(text);
+  var bbox = dummyText.node().getBBox();
 
-//   var textWidth = bbox.width;
-//   var textHeight = bbox.height;
-//   var xGap = 3;
-//   var yGap = 1;
+  var textWidth = bbox.width;
+  var textHeight = bbox.height;
+  var xGap = 3;
+  var yGap = 1;
 
-//   // Generate the positions of the text in the background
-//   var xPtr = 0;
-//   var yPtr = 0;
-//   var positions = [];
-//   var rowCount = 0;
-//   while(yPtr < height){
-//     while(xPtr < width){
-//       var point = {
-//         text: text,
-//         index: positions.length,
-//         x: xPtr,
-//         y: yPtr
-//       };
-//       var dx = point.x - width/2 + textWidth/2;
-//       var dy = point.y - height/2;
-//       point.distance = dx*dx + dy*dy;
+  // Generate the positions of the text in the background
+  var xPtr = 0;
+  var yPtr = 0;
+  var positions = [];
+  var rowCount = 0;
+  while(yPtr < height){
+    while(xPtr < width){
+      var point = {
+        text: text,
+        index: positions.length,
+        x: xPtr,
+        y: yPtr
+      };
+      var dx = point.x - width/2 + textWidth/2;
+      var dy = point.y - height/2;
+      point.distance = dx*dx + dy*dy;
 
-//       positions.push(point);
-//       xPtr += textWidth + xGap;
-//     }
-//     rowCount++;
-//     xPtr = rowCount%2===0 ? 0 : -textWidth/2;
-//     xPtr += Math.random() * 10;
-//     yPtr += textHeight + yGap;
-//   }
+      positions.push(point);
+      xPtr += textWidth + xGap;
+    }
+    rowCount++;
+    xPtr = rowCount%2===0 ? 0 : -textWidth/2;
+    xPtr += Math.random() * 10;
+    yPtr += textHeight + yGap;
+  }
 
-//   var selection = effectLayer.selectAll('text')
-//     .data(positions, function(d){return d.text+'/'+d.index;});
+  var selection = effectLayer.selectAll('text')
+    .data(positions, function(d){return d.text+'/'+d.index;});
 
-//   // Clear old ones
-//   selection.exit().transition()
-//     .style('opacity', 0)
-//     .remove();
+  // Clear old ones
+  selection.exit().transition()
+    .style('opacity', 0)
+    .remove();
 
-//   // Create text but set opacity to 0
-//   selection.enter().append('text')
-//     .text(function(d){return d.text;})
-//     .attr('x', function(d){return d.x;})
-//     .attr('y', function(d){return d.y;})
-//     .style('font-family', fontFamily)
-//     .style('fill', '#777')
-//     .style('opacity', 0);
+  // Create text but set opacity to 0
+  selection.enter().append('text')
+    .text(function(d){return d.text;})
+    .attr('x', function(d){return d.x;})
+    .attr('y', function(d){return d.y;})
+    .style('font-family', fontFamily)
+    .style('fill', '#777')
+    .style('opacity', 0);
 
-//   selection
-//     .style('font-family', fontFamily)
-//     .attr('x', function(d){return d.x;})
-//     .attr('y', function(d){return d.y;});
+  selection
+    .style('font-family', fontFamily)
+    .attr('x', function(d){return d.x;})
+    .attr('y', function(d){return d.y;});
 
-//   // Create transtion to increase opacity from 0 to 0.1-0.5
-//   // Add delay based on distance from the center of the <svg> and a bit more randomness.
-//   selection.transition()
-//     .delay(function(d){
-//       return d.distance * 0.01 + Math.random()*1000;
-//     })
-//     .style('opacity', function(d){
-//       return 0.1 + Math.random()*0.4;
-//     });
-// }
+  // Create transtion to increase opacity from 0 to 0.1-0.5
+  // Add delay based on distance from the center of the <svg> and a bit more randomness.
+  selection.transition()
+    .delay(function(d){
+      return d.distance * 0.01 + Math.random()*1000;
+    })
+    .style('opacity', function(d){
+      return 0.1 + Math.random()*0.4;
+    });
+}
 
 </script>

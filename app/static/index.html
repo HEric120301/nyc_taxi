@@ -1,22 +1,189 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-    <script src="http://d3js.org/d3.v4.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <head>
+    <meta charset="utf-8">
+    <title>NYC Taxi</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<style>
+
+</style>
+
+  </head>
 <body>
+  <div>
+
+    <svg style="float:left"></svg>
+<!--     <div class="btn-group" id="startEndBt" style="float:left; position: absolute; left:20px; top:20px">
+      <button type="button" class="btn btn-primary">Start</button>
+      <button type="button" class="btn btn-primary">End</button>
+    </div>
+ -->
+ <label class="checkbox-inline" style="float:left; position: absolute; left:40px; top:20px">
+    <input type="checkbox" checked data-toggle="toggle" data-on="Start" data-off="End" data-onstyle="success" data-offstyle="info" >
+</label>
 
 
-
-<script>
-
-d3.json('data/nyc_taxi_zones.json', json=>{
-    console.log(json)
-    json['features'].map(d=>{
-        console.log(d.geometry.coordinates.length)
-    })
-})
-    
-</script>
+  </div>
 
 </body>
 </html>
+
+<script>
+var count_each_zone = {},
+  pudo_location = {'pick_up': '', 'drop_off': ''},
+  dragging = false,
+  current_zone = undefined,
+  show_st_or_end = 'pick_up';
+
+var width = 800,
+    height = 700,
+    centered;
+
+// Define color scale
+var color = d3.scalePow()
+  .exponent(0.4)
+  .domain([1, 20])
+  .clamp(true)
+  .range(['#fff', '#409A99']);
+
+var projection = d3.geoMercator()
+  .scale(65000)
+  // Center the Map in Colombia
+  .center([-74, 40.7])
+  .translate([width / 2, height / 2]);
+
+var path = d3.geoPath()
+  .projection(projection);
+
+// Set svg width & height
+var svg = d3.select('svg')
+  .attr('width', width)
+  .attr('height', height);
+
+
+// Add background
+svg.append('rect')
+  .attr('class', 'background')
+  .attr('width', width)
+  .attr('height', height)
+  .on('click', clicked);
+
+//add tip text
+var tip = svg.append('text')
+  .attr('x', 200)
+  .attr('y', 50)
+  .text('')
+  .attr('id', 'tip')
+  .style('font-size', 20)
+
+var g = svg.append('g');
+
+var mapLayer = g.append('g')
+  .classed('map-layer', true);
+
+// Load map data
+d3.json('data/count_each_zone.json', d=>{
+
+  count_each_zone = d;
+
+  d3.json('data/nyc.json', (error, mapData)=>{
+    var features = mapData.features;
+
+    // Update color scale domain based on data
+    color.domain([d3.min(features, zone_count), d3.max(features, zone_count)]);
+    // Draw each province as a path
+    mapLayer.selectAll('path')
+        .data(features)
+        .enter().append('path')
+        .attr('d', path)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('fill', fillFn)
+        .on('mouseover', mouseover)
+        .on('mouseout', mouseout)
+        .on('click', clicked)
+          .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+  });
+
+})
+
+function init_drag(d) {
+  mapLayer.selectAll('path').classed('start_zone', false)
+  mapLayer.selectAll('path').classed('end_zone', false)
+
+  pudo_location = {'pick_up': '', 'drop_off': ''};
+}
+
+function dragstarted(d) {
+  init_drag(d)
+
+  d3.select(this).classed('start_zone', true);
+  var points = d3.mouse(this)
+  pudo_location['pick_up'] = d.properties.zone;
+  dragging = true;
+
+  // var clone = (this).cloneNode(true);
+  // this.parentNode.appendChild(clone)
+  d3.select(this.parentNode).append('circle').attr('cx', points[0]).attr('cy', points[1]).attr('r', 5).attr('id', 'tip_point').classed('prompt_point_show', true).style('cursor', 'pointer')
+}
+
+function dragged(d) {
+  d3.select(this.parentNode).select('#tip_point')
+    .attr("cx", d=>{ return d3.mouse(this)[0]}).attr("cy", d=>{ return d3.mouse(this)[1]}).style('pointer-events','none').style('cursor', 'pointer');
+}
+
+function dragended(d) {
+  d3.select(current_zone).classed('end_zone', true)
+ 
+  d3.select(this.parentNode).select("#tip_point").remove();
+  pudo_location['drop_off'] = d.properties.zone;
+  dragging = false;
+}
+
+function mouseover(d){
+  // Highlight hovered province
+  d3.select(this).style('fill', 'orange');
+  if(dragging) {
+    pudo_location['drop_off'] = d.properties.zone;
+  }
+
+  current_zone = this;
+
+  d3.select('#tip').text(d.properties.zone + ': ' + zone_count(d))
+
+}
+
+function mouseout(d){
+  // Reset zone color
+    mapLayer.selectAll('path')
+      .style('fill', function(d){return centered && d===centered ? '#D5708B' : fillFn(d);});
+}
+
+// Get zone name length
+function zone_count(d){
+  return count_each_zone[d.properties.zone][show_st_or_end]
+}
+
+// Get province color
+function fillFn(d){
+  return color(zone_count(d));
+}
+
+// When clicked, zoom in
+function clicked(d) {
+  init_drag(d);
+}
+
+</script>

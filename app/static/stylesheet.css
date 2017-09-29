@@ -1,0 +1,30 @@
+.background {
+  fill: #eee;
+  pointer-events: all;
+}
+
+.map-layer {
+  fill: #fff;
+  stroke: #aaa;
+}
+
+text{
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 300;
+}
+
+text.big-text{
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.prompt_point_show{
+  fill: red;
+  opacity: 50%;
+}
+
+.start_zone, .end_zone{
+  stroke: #ef8a62;
+  stroke-width: 4px;
+  fill: orange;
+}
