@@ -2,4 +2,8 @@
 
 2. [Done]add pan and zoom to choropleth since line plot could use more space
 
-3. 
+3. create a second table for travel_time_gap
+
+4. find a way to draw a multi-brush scatterplot 
+ 
+5. oh shit,  how to iterate through a selectionAll, there is conflition on "this"

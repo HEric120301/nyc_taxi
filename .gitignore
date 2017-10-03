@@ -1,5 +1,7 @@
 $ git status
 # Untracked files:
 data_preprocessing/*.db
+data_preprocessing/*.json
 data/*.csv
 data/
+*.pyc
