@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta title="Minimal D3 v4 multiple brushes example--Ludwig Schubert for Stanford CS448b">
+<style>
+
+.grid-background {
+  fill: #eee;
+}
+
+.grid line,
+.grid path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.brush .selection {
+  stroke: #000;
+  fill: red;
+}
+
+</style>
+<body>
+
+<script src="http://d3js.org/d3.v4.min.js"></script>
+
+<script>
+
+var margin = {top: 20, right: 20, bottom: 110, left: 50},
+    margin2 = {top: 430, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    height2 = 500 - margin2.top - margin2.bottom;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+var parseDate = d3.timeParse("%b %Y");
+
+var x = d3.scaleTime().range([0, width]),
+    x2 = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    y2 = d3.scaleLinear().range([height2, 0]),
+    x3 = d3.scaleTime().range([0, width]),
+    y3 = d3.scaleLinear().range([height, 0]);
+
+var xAxis = d3.axisBottom(x),
+    xAxis2 = d3.axisBottom(x2),
+    yAxis = d3.axisLeft(y),
+    xAxis3 = d3.axisTop(x3),
+    yAxis3 = d3.axisRight(y3);
+
+var focus = svg.append("g")
+    .attr("class", "focus")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var context = svg.append("g")
+    .attr("class", "context")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+context.append("rect")
+    .attr("class", "grid-background")
+    .attr("width", width)
+    .attr("height", height);
+
+context.append('rect')
+    .attr('class', 'align-pad')
+    .attr('width', width)
+    .attr('height', height2)
+    .attr("transform", "translate(0," + height2 + ")")
+    .attr('fill', 'lightblue')
+    .on('click', align_brush)
+
+function align_brush() {
+
+    //fix the selection of the second brush to the first one's
+    if(brush_count>=3) {
+        var selection0 = d3.brushSelection(d3.select('.brush#brush-0').node()),
+            selection1 = d3.brushSelection(d3.select('.brush#brush-1').node());
+        brushes[1].brush.move(d3.select('.brush#brush-1'), [selection1[0], selection1[0]+(selection0[1]-selection0[0])])
+    }
+}
+
+// We initially generate a SVG group to keep our brushes' DOM elements in:
+var gBrushes = context.append('g')
+    .attr("class", "brushes");
+
+// We also keep the actual d3-brush functions and their IDs in a list:
+var brushes = [],
+    brush_count = 0
+
+/* CREATE NEW BRUSH
+ *
+ * This creates a new brush. A brush is both a function (in our array) and a set of predefined DOM elements
+ * Brushes also have selections. While the selection are empty (i.e. a suer hasn't yet dragged)
+ * the brushes are invisible. We will add an initial brush when this viz starts. (see end of file)
+ * Now imagine the user clicked, moved the mouse, and let go. They just gave a selection to the initial brush.
+ * We now want to create a new brush.
+ * However, imagine the user had simply dragged an existing brush--in that case we would not want to create a new one.
+ * We will use the selection of a brush in brushend() to differentiate these cases.
+ */
+function newBrush() {
+    var brush = d3.brushX().extent([[0, 0], [width, height2]])
+        .on("start", brushstart)
+        .on("brush", brushed)
+        .on("end", brushend);
+
+    if(brushes.length<2) {
+        brushes.push({id: brushes.length, brush: brush});
+    }
+    brush_count += 1
+}
+
+function drawBrushes() {
+
+    var brushSelection = gBrushes
+        .selectAll('.brush')
+        .data(brushes, function (d){return d.id});
+
+    // Set up new brushes
+    brushSelection.enter()
+        .insert("g", '.brush')
+        .attr('class', 'brush')
+        .attr('id', function(brush){ return "brush-" + brush.id; })
+        .each(function(brushObject) {
+          //call the brush
+          brushObject.brush(d3.select(this));
+        });
+
+  /* REMOVE POINTER EVENTS ON BRUSH OVERLAYS
+   *
+   * This part is abbit tricky and requires knowledge of how brushes are implemented.
+   * They register pointer events on a .overlay rectangle within them.
+   * For existing brushes, make sure we disable their pointer events on their overlay.
+   * This frees the overlay for the most current (as of yet with an empty selection) brush to listen for click and drag events
+   * The moving and resizing is done with other parts of the brush, so that will still work.
+   */
+    brushSelection
+        .each(function (brushObject){
+    d3.select(this)
+        .attr('class', 'brush')
+        .selectAll('.overlay')
+        .style('pointer-events', function() {
+            var brush = brushObject.brush;
+            if (brushObject.id === brushes.length-1 && brush !== undefined) {
+                return 'all';
+            }
+            else {
+            return 'none';
+            }
+        });
+    })
+
+    brushSelection.exit()
+        .remove();
+}
+
+newBrush();
+drawBrushes();
+
+d3.csv("data.csv", type, function(error, data) {
+    if (error) throw error;
+
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.price+200; })]);
+    x2.domain(x.domain());
+    y2.domain(y.domain());
+    x3.domain(x.domain());
+    y3.domain(y.domain());
+
+// append scatter plot to main chart area 
+    var dots = focus.append("g");
+    dots.attr("clip-path", "url(#clip)");
+    dots.selectAll("dot")
+        .data(data)
+        .enter().append("circle")
+        .attr('class', 'dot')
+        .attr("r",3)
+        .style("opacity", .5)
+        .attr("cx", function(d) { return x(d.date); })
+        .attr("cy", function(d) { return y(d.price); })
+     
+    var dots2 = focus.append("g");
+    dots.attr("clip-path", "url(#clip)");
+    dots.selectAll("dot2")
+        .data(data)
+        .enter().append("circle")
+        .attr('class', 'dot2')
+        .attr("r",3)
+        .style("opacity", .5)
+        .attr("cx", function(d) { return x3(d.date); })
+        .attr("cy", function(d) { return y3(d.price)+20; })
+
+
+    focus.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    focus.append("g")
+        .attr("class", "axis axis--y")
+        .call(yAxis);
+     
+    focus.append("g")
+        .attr("class", "axis axis--x3")
+        .attr("transform", "translate(0, 0)")
+        .call(xAxis3);
+
+    focus.append("g")
+        .attr("class", "axis axis--y3")
+        .attr("transform", "translate(" + (width-20)+ "," + 0 + ")")
+        .call(yAxis3);
+
+    focus.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("time consumed");  
+      
+    svg.append("text")             
+        .attr("transform",
+            "translate(" + ((width + margin.right + margin.left)/2) + " ," + 
+                           (height + margin.top + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .text("Time");
+      
+// append scatter plot to brush chart area      
+    var dots = context.append("g");
+    dots.attr("clip-path", "url(#clip)");
+    dots.selectAll("dot")
+        .data(data)
+        .enter().append("circle")
+        .attr('class', 'dotContext')
+        .attr("r",2)
+        .style("opacity", .5)
+        .attr("cx", function(d) { return x2(d.date); })
+        .attr("cy", function(d) { return y2(d.price); })
+        
+    context.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height2 + ")")
+        .call(xAxis2);
+
+});
+
+//create brush function redraw scatterplot with selection
+function brushed() {
+    var selection = d3.event.selection;
+    var id = d3.select(this).attr('id');
+    if(id=='brush-0') {
+        x.domain(selection.map(x2.invert, x2));
+        focus.selectAll(".dot")
+            .attr("cx", function(d) { return x(d.date); })
+            .attr("cy", function(d) { return y(d.price); });
+        focus.select(".axis--x").call(xAxis);
+    }
+    else {
+        x3.domain(selection.map(x2.invert, x2));
+        focus.selectAll(".dot2")
+            .attr("cx", function(d) { return x3(d.date); })
+            .attr("cy", function(d) { return y3(d.price)+20; });
+        focus.select(".axis--x3").call(xAxis3);
+    }
+}
+
+function brushstart() {
+};
+
+function brushend() {
+
+// Figure out if our latest brush has a selection
+    var lastBrushID = brushes[brushes.length - 1].id;
+    var lastBrush = document.getElementById('brush-' + lastBrushID);
+    var selection = d3.brushSelection(lastBrush);
+
+    // If it does, that means we need another one
+    if (selection && selection[0] !== selection[1]) {
+      newBrush();
+    }
+
+    // Always draw brushes
+    drawBrushes();
+
+    if(brushes.length==2) {
+        // brushes[1].brush.move(d3.select(this), [2,5])
+    }
+}
+
+function type(d) {
+    d.date = parseDate(d.date);
+    d.price = +d.price;
+    return d;
+}
+
+</script>
