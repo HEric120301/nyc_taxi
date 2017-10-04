@@ -75,8 +75,8 @@ def traffic():
 		traffics[start][end] = num
 
 	max_rows = request.json['max_length']
-	min_mat, rows, cols = minimize_matrix(traffics, max_rows)
-	return jsonify({'matrix': min_mat, 'row_zones': rows, 'col_zones': cols})
+	min_mat, mat_ids, row_ids = minimize_matrix(traffics, max_rows)
+	return jsonify({'matrix': min_mat, 'row_ids': row_ids, 'mat_ids': mat_ids})
 
 
 def minimize_matrix(matrix, max_rows):
@@ -110,8 +110,27 @@ def minimize_matrix(matrix, max_rows):
 			for c in cs:
 				arr.append(row[c[0]])
 			mat_minrowcol.append(arr)
-		return mat_minrowcol, rows, cols
+		
+		return sort_matrix(mat_minrowcol, rows, cols)
 
 	else:
-		return matrix, range(1, len(matrix)+1), range(1, len(matrix)+1)
+		return sort_matrix(mat_minrowcol, rows, cols)
+
+def sort_matrix(matrix, rows, cols):
+	row_idx = sorted(range(len(matrix)), key=lambda k: sum(matrix[k]))
+	mat_01 = [matrix[idx] for idx in row_idx]
+	# rows_arranged = [rows[idx] for idx in row_idx]
+	# print(rows_arranged)
+	mat = []
+	mat_ids = []
+	for row in mat_01:
+		col_idx = sorted(range(len(row)), key=lambda k: row[k])
+		row_arranged = [row[idx] for idx in col_idx]
+		mat.append(row_arranged)
+
+		row_id_arranged = [cols[idx] for idx in col_idx]
+		mat_ids.append(row_id_arranged)
+
+	# print(mat_ids)
+	return mat, mat_ids, row_idx
 

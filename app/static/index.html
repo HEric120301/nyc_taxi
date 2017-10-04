@@ -373,7 +373,6 @@ function draw_timeplot(data) {
 
     data = travel_values
 
-    console.log(d3.extent(data, function(d) { return d.date; }))
 
     x.domain(d3.extent(data, function(d) { return d.date; }));
     y.domain([0, d3.max(data, function(d) { return d.value; })]);
@@ -394,10 +393,6 @@ function draw_timeplot(data) {
         .style("opacity", .5)
         .attr("cx", function(d) { return x(d.date); })
         .attr("cy", function(d) {
-              if(y(d.value)>10000){
-                console.log(d)
-              } 
-              // console.log(y(d.value))
               return y(d.value); })
      
     var dots2 = focus.append("g");
@@ -503,7 +498,7 @@ function brushend() {
 </script>
 <script type="text/javascript">
 
-var max_num_of_chord = 2;
+var max_num_of_chord = 10;
 $.ajax({
     type: 'POST',
     url: '/traffic',
@@ -514,13 +509,24 @@ $.ajax({
     // async: false,
     success: function(data) {
         console.log('Success!');
-        var matrix = data['matrix']
-        console.log(data)
-        draw_chord(matrix);
+        draw_chord(data);
     },
 });
 
-function draw_chord(matrix) {
+function draw_chord(data) {
+
+    var matrix = data['matrix'],
+      mat_ids = data['mat_ids'],
+      row_ids = data['row_ids'];
+
+      console.log(row_ids);
+    matrix.forEach(d=>{
+        var sum = 0
+        d.forEach(ds=>{
+          sum+=ds
+        })
+        console.log(sum)
+    })
 
     var chord_svg = d3.select("#chord_graph").append('svg')
           .attr('width', 600)
@@ -529,6 +535,7 @@ function draw_chord(matrix) {
         height = +chord_svg.attr("height"),
         outerRadius = Math.min(width, height) * 0.5 - 40,
         innerRadius = outerRadius - 13;
+
 
     var formatValue = d3.formatPrefix(",.0", 1e3);
 
@@ -550,6 +557,9 @@ function draw_chord(matrix) {
     var g = chord_svg.append("g")
         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
         .datum(chord(matrix));
+   
+    var chord_tip = chord_svg.append('text').text('').attr('x', 10)
+    .attr('y', 20).style('font-size',20).style('pointer-events', 'all')
 
     var group = g.append("g")
         .attr("class", "groups")
@@ -591,13 +601,24 @@ function draw_chord(matrix) {
       .data(function(chords) { return chords; })
       .enter().append("path")
         .attr("d", ribbon)
-        .style("fill", function(d) {console.log(d); return chord_color(d.target.index); })
+        .style("fill", function(d) { return chord_color(d.target.index); })
         .style("stroke", function(d) { return d3.rgb(chord_color(d.target.index)).darker(); })
         .on('mouseover', d=>{ 
-            // console.log(d);
+            var start_id = row_ids[d.source.index]+1,
+              start_val = d.source.value,
+              end_id = mat_ids[d.source.index][d.target.index]+1,
+              end_val = d.target.value;
 
-        });
+            var start_zone = lookup_dict[start_id].Zone,
+              end_zone = lookup_dict[end_id].Zone;
 
+            chord_tip.selectAll('tspan').remove()
+            chord_tip.append('tspan').text(start_zone+": "+start_val)
+            chord_tip.append('tspan').text(end_zone+": "+end_val).attr('x', 10).attr('dy', '1.2em')
+
+        })
+
+        // .on('mouseout', d=>{chord_tip.text('')})
     // Returns an array of tick angles and values for a given group and step.
     function groupTicks(d, step) {
       var k = (d.endAngle - d.startAngle) / d.value;
@@ -634,4 +655,4 @@ function draw_chord(matrix) {
 }
 
 
-</script>>
+</script>
