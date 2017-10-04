@@ -65,8 +65,6 @@ def traffic():
 		for j in range(0, num_of_zones):
 			arr.append(0)
 		traffics.append(arr)
-	# print(len(traffics))
-	# print(len(traffics[0]))
 
 	for doc in docs:
 		travel = doc['travel']
@@ -74,51 +72,46 @@ def traffic():
 		ids = (travel.split('+'))
 		start = int(ids[0])-1
 		end = int(ids[1])-1
-		# print(start, end)
 		traffics[start][end] = num
-	# print(traffics)
 
-	max_rows = 10
+	max_rows = request.json['max_length']
 	min_mat, rows, cols = minimize_matrix(traffics, max_rows)
-
-	
 	return jsonify({'matrix': min_mat, 'row_zones': rows, 'col_zones': cols})
 
 
 def minimize_matrix(matrix, max_rows):
 
-	row_dict = {}
-	for i in range(num_of_zones):
-		row_dict[i] = 0
-		for j in range(num_of_zones):
-			row_dict[i] += matrix[i][j]
-	rs = sorted(row_dict.items(), key=operator.itemgetter(1))[-max_rows:]
-	mat_minrow, rows = [], []
-	for r in rs:
-		row = r[0]
-		mat_minrow.append(matrix[row])
-		rows.append(row+1)
-
-
-	# print(mat_minrow)
-
-	col_dict = {}
-	for j in range(num_of_zones):
-		col_dict[j] = 0
+	if len(matrix)>max_rows:
+		row_dict = {}
 		for i in range(num_of_zones):
-			col_dict[j] += matrix[i][j]
+			row_dict[i] = 0
+			for j in range(num_of_zones):
+				row_dict[i] += matrix[i][j]
+		rs = sorted(row_dict.items(), key=operator.itemgetter(1))[-max_rows:]
+		mat_minrow, rows = [], []
+		for r in rs:
+			row = r[0]
+			mat_minrow.append(matrix[row])
+			rows.append(row+1)
 
-	cs = sorted(col_dict.items(), key=operator.itemgetter(1))[-max_rows:]
-	mat_minrowcol, cols = [], []
-	for c in cs:
-		cols.append(c[0]+1)		
+		col_dict = {}
+		for j in range(num_of_zones):
+			col_dict[j] = 0
+			for i in range(num_of_zones):
+				col_dict[j] += matrix[i][j]
 
-	for row in mat_minrow:
-		arr = []
+		cs = sorted(col_dict.items(), key=operator.itemgetter(1))[-max_rows:]
+		mat_minrowcol, cols = [], []
 		for c in cs:
-			arr.append(row[c[0]])
-		mat_minrowcol.append(arr)
+			cols.append(c[0]+1)		
 
-	print(mat_minrowcol)
-	return mat_minrowcol, rows, cols
+		for row in mat_minrow:
+			arr = []
+			for c in cs:
+				arr.append(row[c[0]])
+			mat_minrowcol.append(arr)
+		return mat_minrowcol, rows, cols
+
+	else:
+		return matrix, range(1, len(matrix)+1), range(1, len(matrix)+1)
 
