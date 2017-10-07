@@ -20,6 +20,8 @@
     <link href="lib/bootstrap/bootstrap-toggle-master/css/bootstrap-toggle.min.css" rel="stylesheet">
     <script src="lib/bootstrap/bootstrap-toggle-master/js/bootstrap-toggle.min.js"></script>
 
+    <!-- color legend -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.min.js"></script>
 
 
   </head>
@@ -34,9 +36,17 @@
   </div>
   <div id="chord_graph">
   </div>
+  <div id="time_pattern">
+  </div>
+  <div id="pattern_line_plot">
+  </div>
+
 
 </body>
 </html>
+<script type="text/javascript" src="js/pattern_plot.js"></script>
+<script type="text/javascript" src="js/chord_graph.js"></script>
+
 <script>
 
 /*choropleth map*/
@@ -95,7 +105,7 @@ var tip = map_svg.append('text')
     .attr('y', 50)
     .text('')
     .attr('id', 'tip')
-    .style('font-size', 20)
+    .attr('class', 'tip')
 
 // Load map data
 d3.json('data/count_each_zone.json', d=>{
@@ -114,6 +124,8 @@ d3.json('data/count_each_zone.json', d=>{
         })
         d3.json('data/id_name_lookDict.json', (error, lookup_json)=>{
             lookup_dict = lookup_json;
+            draw_circos()
+
         })  
     });
 
@@ -495,164 +507,12 @@ function brushend() {
     drawBrushes();
 }
 
-</script>
-<script type="text/javascript">
-
-var max_num_of_chord = 10;
-$.ajax({
-    type: 'POST',
-    url: '/traffic',
-    data: JSON.stringify({"max_length": max_num_of_chord}),
-    contentType: 'application/json;charset=UTF-8',
-    // cache: false,
-    // processData: false,
-    // async: false,
-    success: function(data) {
-        console.log('Success!');
-        draw_chord(data);
-    },
-});
-
-function draw_chord(data) {
-
-    var matrix = data['matrix'],
-      mat_ids = data['mat_ids'],
-      row_ids = data['row_ids'];
-
-      console.log(row_ids);
-    matrix.forEach(d=>{
-        var sum = 0
-        d.forEach(ds=>{
-          sum+=ds
-        })
-        console.log(sum)
-    })
-
-    var chord_svg = d3.select("#chord_graph").append('svg')
-          .attr('width', 600)
-          .attr('height', 600),
-        width = +chord_svg.attr("width"),
-        height = +chord_svg.attr("height"),
-        outerRadius = Math.min(width, height) * 0.5 - 40,
-        innerRadius = outerRadius - 13;
 
 
-    var formatValue = d3.formatPrefix(",.0", 1e3);
 
-    var chord = d3.chord()
-        .padAngle(0.05)
-        .sortSubgroups(d3.descending);
+//draw time_pattern plot
 
-    var arc = d3.arc()
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius);
-
-    var ribbon = d3.ribbon()
-        .radius(innerRadius-5);
-
-    var chord_color = d3.scaleOrdinal()
-        .domain(d3.range(max_num_of_chord))
-        .range(['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837']);
-
-    var g = chord_svg.append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-        .datum(chord(matrix));
-   
-    var chord_tip = chord_svg.append('text').text('').attr('x', 10)
-    .attr('y', 20).style('font-size',20).style('pointer-events', 'all')
-
-    var group = g.append("g")
-        .attr("class", "groups")
-      .selectAll("g")
-      .data(function(chords) { return chords.groups; })
-      .enter().append("g");
-
-    group.append("path")
-        .style("fill", function(d) { return chord_color(d.index); })
-        .style("stroke", function(d) { return d3.rgb(chord_color(d.index)).darker(); })
-        .attr("d", arc)
-        .on("mouseover", (d)=>{ console.log(d);})
-        // .on("mouseout", (d)=> { fade(1, d)})
-        .on("click", (d)=>{ fade(0.1, d)})
-        .on("dblclick", (d)=>{ fade(1, d)})
-
-
-    // var groupTick = group.selectAll(".group-tick")
-    //   .data(function(d) { return groupTicks(d, 1e3); })
-    //   .enter().append("g")
-    //     .attr("class", "group-tick")
-    //     .attr("transform", function(d) { return "rotate(" + (d.angle * 180 / Math.PI - 90) + ") translate(" + outerRadius + ",0)"; });
-
-    // groupTick.append("line")
-    //     .attr("x2", 6);
-
-    // groupTick
-    //   .filter(function(d) { return d.value % 5e3 === 0; })
-    //   .append("text")
-    //     .attr("x", 8)
-    //     .attr("dy", ".35em")
-    //     .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180) translate(-16)" : null; })
-    //     .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-    //     .text(function(d) { return formatValue(d.value); });
-
-    g.append("g")
-        .attr("class", "ribbons")
-      .selectAll("path")
-      .data(function(chords) { return chords; })
-      .enter().append("path")
-        .attr("d", ribbon)
-        .style("fill", function(d) { return chord_color(d.target.index); })
-        .style("stroke", function(d) { return d3.rgb(chord_color(d.target.index)).darker(); })
-        .on('mouseover', d=>{ 
-            var start_id = row_ids[d.source.index]+1,
-              start_val = d.source.value,
-              end_id = mat_ids[d.source.index][d.target.index]+1,
-              end_val = d.target.value;
-
-            var start_zone = lookup_dict[start_id].Zone,
-              end_zone = lookup_dict[end_id].Zone;
-
-            chord_tip.selectAll('tspan').remove()
-            chord_tip.append('tspan').text(start_zone+": "+start_val)
-            chord_tip.append('tspan').text(end_zone+": "+end_val).attr('x', 10).attr('dy', '1.2em')
-
-        })
-
-        // .on('mouseout', d=>{chord_tip.text('')})
-    // Returns an array of tick angles and values for a given group and step.
-    function groupTicks(d, step) {
-      var k = (d.endAngle - d.startAngle) / d.value;
-      return d3.range(0, d.value, step).map(function(value) {
-        return {value: value, angle: value * k + d.startAngle};
-      });
-    }
-
-    function fade(opacity, d) {
-        var i = d.index
-        chord_svg.selectAll("g.ribbons path")
-            .transition()
-            .style("opacity", 1);
-
-        chord_svg.selectAll("g.groups path")
-            .transition()
-            .style("opacity", 1);
-
-        chord_svg.selectAll("g.ribbons path")
-            .filter(function(d) {
-                return d.source.index != i && d.target.index != i;
-            })
-            .transition()
-            .style("opacity", opacity);
-
-        chord_svg.selectAll("g.groups path")
-            .filter(function(d) {
-                return d.index != i;
-            })
-            .transition()
-            .style("opacity", opacity);
-    }
-
-}
+pattern_plot()
 
 
 </script>

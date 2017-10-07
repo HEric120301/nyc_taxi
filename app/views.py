@@ -11,6 +11,11 @@ folder_path = os.path.dirname(os.path.abspath(__file__))
 import pymongo
 from pymongo import MongoClient
 
+from sklearn.cluster import KMeans
+import numpy as np
+
+from datetime import datetime, timedelta
+
 lookup_tb = {}
 num_of_zones = 265
 
@@ -34,7 +39,7 @@ def index():
 
 
 @app.route('/travel_timegap', methods=['POST'])
-def hello():
+def travel_timegap():
 	pickup = request.json['pick_up']
 	dropoff = request.json['drop_off']
 	lookup_dict()
@@ -75,8 +80,8 @@ def traffic():
 		traffics[start][end] = num
 
 	max_rows = request.json['max_length']
-	min_mat, mat_ids, row_ids = minimize_matrix(traffics, max_rows)
-	return jsonify({'matrix': min_mat, 'row_ids': row_ids, 'mat_ids': mat_ids})
+	min_mat, row_ids = minimize_matrix(traffics, max_rows)
+	return jsonify({'matrix': min_mat, 'row_ids': row_ids})
 
 
 def minimize_matrix(matrix, max_rows):
@@ -101,36 +106,76 @@ def minimize_matrix(matrix, max_rows):
 				col_dict[j] += matrix[i][j]
 
 		cs = sorted(col_dict.items(), key=operator.itemgetter(1))[-max_rows:]
-		mat_minrowcol, cols = [], []
-		for c in cs:
-			cols.append(c[0]+1)		
-
+		mat_minrowcol = []
 		for row in mat_minrow:
 			arr = []
 			for c in cs:
 				arr.append(row[c[0]])
 			mat_minrowcol.append(arr)
 		
-		return sort_matrix(mat_minrowcol, rows, cols)
+		return sort_matrix(mat_minrowcol, rows)
 
 	else:
-		return sort_matrix(mat_minrowcol, rows, cols)
+		return sort_matrix(mat_minrowcol, rows)
 
-def sort_matrix(matrix, rows, cols):
+# get group id for chord_graph
+def sort_matrix(matrix, rows):
 	row_idx = sorted(range(len(matrix)), key=lambda k: sum(matrix[k]))
 	mat_01 = [matrix[idx] for idx in row_idx]
-	# rows_arranged = [rows[idx] for idx in row_idx]
-	# print(rows_arranged)
 	mat = []
-	mat_ids = []
 	for row in mat_01:
 		col_idx = sorted(range(len(row)), key=lambda k: row[k])
 		row_arranged = [row[idx] for idx in col_idx]
 		mat.append(row_arranged)
 
-		row_id_arranged = [cols[idx] for idx in col_idx]
-		mat_ids.append(row_id_arranged)
+	return mat, [rows[idx] for idx in row_idx]
 
-	# print(mat_ids)
-	return mat, mat_ids, row_idx
+
+@app.route('/time_pattern',  methods = ['POST'])
+def time_pattern():
+	start_time = "2017-02-06 00:00:00"
+	gap = 5
+
+
+	client = MongoClient('localhost', 27017)
+	time_series_collection = client.timegap.traffic_of_zone
+	docs = time_series_collection.find()
+
+	km_arr = []
+	for doc in docs:
+		km_arr.append(doc['traffic'])
+
+	num_cltrs = request.json['num_of_patterns']
+	X = np.array(km_arr)
+	kmeans = KMeans(n_clusters=num_cltrs, random_state=0).fit(X)
+	labels = kmeans.labels_
+	patterns = {} #{0: [262, 2], 1: [], 2: [], ... , 9: []} 
+	for i in range(num_cltrs):
+	    patterns[i] = []
+	for idx, i in enumerate(labels):
+	    patterns[i].append(idx+1)
+    
+	centers = kmeans.cluster_centers_
+
+    # get x axis data
+	num_days = int(35/gap)
+	num_of_gap = int(num_days*24*60/gap)
+	time_points = []
+	t_point = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+	for j in range(num_of_gap):
+	    time_points.append(t_point.strftime('%Y-%m-%d %H:%M:%S'))
+	    t_point += timedelta(minutes = gap)
+
+	# pattern look up dictionary
+	pattern_lookup = {}
+	for idx, i in enumerate(labels):
+	    idd = str(idx+1)
+	    pattern_lookup[idd] = int(i)
+
+	return jsonify({'time_ticks': time_points, 'patterns': patterns,
+					 'centers': centers.tolist(), 'pattern_lookup': pattern_lookup})
+
+
+
+
 

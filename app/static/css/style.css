@@ -58,3 +58,9 @@ text.big-text{
   fill: blue;
 }
 
+
+/*pattern plot*/
+.highlight {
+   stroke-width: 2;
+   stroke: #ffff99;
+}
