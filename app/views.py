@@ -155,7 +155,7 @@ def time_pattern():
 	for idx, i in enumerate(labels):
 	    patterns[i].append(idx+1)
     
-	centers = kmeans.cluster_centers_
+	centers = kmeans.cluster_centers_.tolist()
 
     # get x axis data
 	num_days = int(35/gap)
@@ -166,14 +166,28 @@ def time_pattern():
 	    time_points.append(t_point.strftime('%Y-%m-%d %H:%M:%S'))
 	    t_point += timedelta(minutes = gap)
 
-	# pattern look up dictionary
+	# pattern look up dictionary, aka key as zoneid and value as pattern id
 	pattern_lookup = {}
 	for idx, i in enumerate(labels):
 	    idd = str(idx+1)
 	    pattern_lookup[idd] = int(i)
 
+	# 
+	time_series_all_pattern = []
+	for t in time_points:
+		time_series_all_pattern.append({'date': t})
+
+	for pattern_id, value_series in enumerate(centers):
+		# print(value_series)
+		for idx, val in enumerate(value_series):
+			time_series_all_pattern[idx][str(pattern_id)] = val
+
+
+
+	# print(centers)
+
 	return jsonify({'time_ticks': time_points, 'patterns': patterns,
-					 'centers': centers.tolist(), 'pattern_lookup': pattern_lookup})
+					 'centers': centers, 'pattern_lookup': pattern_lookup, 'time_series_all_pattern': time_series_all_pattern})
 
 
 

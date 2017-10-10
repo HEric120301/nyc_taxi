@@ -5,9 +5,20 @@ function pattern_plot() {
         pattern_lookup = {},
         patterns = {};
 
+    var draw_all_lines = function(){};
+    var pattern_fetched = false;
+    var all_pattern_data = [];
+    var pattern_drawn = {};
+    for(var i=0; i<10; i++){
+        pattern_drawn[i.toString()] = false;
+    }
+
     var width = 600,
         height = 500,
-        centered;
+        width2 = 800;
+
+    var mouse_in_plot = false,
+        pattern_chosed = [];
 
     // Define color scale
     var color = d3.scaleOrdinal()
@@ -25,8 +36,9 @@ function pattern_plot() {
 
     // Set svg width & height
     var svg = d3.select('#time_pattern').append('svg')
-        .attr('width', width)
-        .attr('height', height);
+        .attr('width', width+width2)
+        .attr('height', height)
+        .append('g');
     // Add background
     svg.append('rect')
         .attr('class', 'background')
@@ -44,9 +56,9 @@ function pattern_plot() {
 
     //add tip text
     var tip = svg.append('text')
-        .attr('x', 140)
-        .attr('y', 50)
-        .text('jk')
+        .attr('x', 170)
+        .attr('y', 90)
+        .text('')
         .attr('id', 'tip')
         .attr('class', 'tip')
 
@@ -59,17 +71,16 @@ function pattern_plot() {
           .shapeHeight(10)
           .labelOffset(4);
 
-        var color_legend = svg.append('svg').append("g")
-          .attr("transform", "translate(" + (40) + ", 60)")
-          .call(color_legend_scale);
-        // color_legend.selectAll('text').remove();
+    var color_legend = svg.append('svg').append("g")
+      .attr("transform", "translate(" + (40) + ", 60)")
+      .call(color_legend_scale)
+    // color_legend.selectAll('text').remove();
 
 
     // Load map data
     d3.json('data/name_id_lookDict.json', d=>{
 
         lookup_dict = d;
-        console.log(lookup_dict)
         d3.json('data/nyc.geo.json', (error, mapData)=>{
             var features = mapData.features;
             $.ajax({
@@ -79,8 +90,11 @@ function pattern_plot() {
                 contentType: 'application/json;charset=UTF-8',
                 success: function(data) {
                     console.log('Success!');
+                    // line_data = data;
+                    // console.log(data)
+                    all_pattern_data = data['time_series_all_pattern'];
                     draw_map(features, data, drawlinchart);
-
+                    pattern_fetched = true;
                 },
             });
 
@@ -110,12 +124,47 @@ function pattern_plot() {
         })
         color_legend.selectAll('rect')
             .on('click', legendClick)
-
+            .call(d3.drag()
+            .on("start", legend_dragstarted)
+            .on("drag", legend_dragged)
+            .on("end", legend_dragended))
+            .on('mouseover', d=>{});
+        
+        drawlinchart();
 
     }
 
+    var legend_dragstarted = function() {
+        // dragging = true
+    }
+    var legend_dragged = function() {
+        
+    }
+    var legend_dragended = function(d) {
+        if(mouse_in_plot) {
+            // var time_ticks = line_data['time_ticks'],
+            //     centers = line_data['centers'];
+
+            // var values = centers[d];
+            // var arr = []
+            // for(var i=0; i<time_ticks.length; i++) {
+            //     var ts = time_ticks[i],
+            //         val = values[i];
+
+            // }
+            if(pattern_fetched) {
+                pattern_drawn[d] = true;
+                console.log('#pattern'+d)
+                // draw_all_lines(all_pattern_data);
+                d3.select('#lines').selectAll('.city').style('visibility', 'hidden')
+                d3.select('#lines').select('#pattern'+d).style('visibility', 'visible')
+            }
+            
+        }
+        // dragging = false
+    }
+
     var legendClick = function(d) {
-        console.log(32);
     }
 
     var mouseover = function(d) {
@@ -129,11 +178,9 @@ function pattern_plot() {
             .filter((d, i)=> { return pattern_id == i; })
             .classed('highlight', true)
 
-        map_svg.select('#tip').text(dd=>{
-            return dd.properties.zone;
-        })
-        .attr('x', dd=>{return d3.event.offsetX;})
-        .attr('y', dd=>{return d3.event.offsetY;})
+        svg.select('#tip').text(d.properties.zone)
+            // .attr('x', d3.event.offsetX)
+            // .attr('y', d3.event.offsetY)
 
     }
     var mouseout = function(d) {
@@ -150,51 +197,101 @@ function pattern_plot() {
     }
 
     var drawlinchart = function() {
-        var margin = {top: 20, right: 20, bottom: 110, left: 50},
-            margin2 = {top: 430, right: 20, bottom: 30, left: 40},
-            width = 820 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom,
-            height2 = 500 - margin2.top - margin2.bottom;
 
-        var line_svg = d3.select("#pattern_line_plot").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom);
+        var margin = {top: 0, right: 120, bottom: 30, left: 50},
+            g = svg.append('g').attr("transform", "translate(" + (width) + ", 0)");
+        
+        //background, attach mouseenter event to determin whether any pattern is dragged
+        var background = g.append('rect').attr('width', width2).attr('height', height).style('fill', "gray").style('opacity', 0.2)
+            .on('mouseenter', (d)=>{ mouse_in_plot = true;})
+            .on('mouseout', d=>{ mouse_in_plot = false;})
 
-        var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+        var line_svg = g.append('svg').attr('width', width2).attr('height', height).attr('id', 'lines');
 
-        var x = d3.scaleTime().range([0, width-margin.right]),
-            x2 = d3.scaleTime().range([0, width-margin.right]),
-            y = d3.scaleLinear().range([height, 0]),
-            y2 = d3.scaleLinear().range([height2, 0]),
-            x3 = d3.scaleTime().range([0, width-margin.right]),
-            y3 = d3.scaleLinear().range([height, 0]);
+        var parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
-        var xAxis = d3.axisBottom(x),
-            xAxis2 = d3.axisBottom(x2),
-            yAxis = d3.axisLeft(y),
-            xAxis3 = d3.axisTop(x3),
-            yAxis3 = d3.axisRight(y3);
+        var x = d3.scaleTime().range([margin.left, width2-margin.right]),
+            y = d3.scaleLinear().range([height-margin.bottom, 0]),
+            z = d3.scaleOrdinal(d3.schemeCategory10);
 
-        var focus = line_svg.append("g")
-            .attr("class", "focus")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var line = d3.line()
+            .curve(d3.curveBasis)
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.temperature); });
 
-        var context = line_svg.append("g")
-            .attr("class", "context")
-            .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-        context.append("rect")
-            .attr("class", "grid-background")
-            .attr("width", width)
-            .attr("height", height);
+        draw_all_lines = function(data) {
+          var cities = d3.range(num_of_patterns).map(function(id) {
+            return {
+              id: id.toString(),
+              values: data.map(function(d) {
+                return {date: parseTime(d.date), temperature: d[id]};
+              })
+            };
+          });
 
-        context.append('rect')
-            .attr('class', 'align-pad')
-            .attr('width', width)
-            .attr('height', height2)
-            .attr("transform", "translate(0," + height2 + ")")
-            .attr('fill', 'lightblue')
-            .on('click', align_brush)
+          // console.log(data)
+          // var cities = d3.range(10).map(i=>{
+          //   return i.toString()
+          // })
+          console.log(cities)
+
+          x.domain(d3.extent(data, function(d) { return parseTime(d.date); }));
+
+          y.domain([
+            d3.min(cities, function(c) { return d3.min(c.values, function(d) { return d.temperature; }); }),
+            d3.max(cities, function(c) { return d3.max(c.values, function(d) { return d.temperature; }); })
+          ]);
+
+          z.domain(cities.map(function(c) { return c.id; }));
+
+          line_svg.append("g")
+              .attr("class", "axis axis--x")
+              .attr("transform", "translate(0," + (height-margin.bottom) + ")")
+              .call(d3.axisBottom(x));
+
+          line_svg.append("g")
+              .attr("class", "axis axis--y")
+              .call(d3.axisLeft(y))
+              .attr("transform", "translate(" + margin.left + ", 0)")
+            .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", 6)
+              .attr("dy", "0.71em")
+              .attr("fill", "#000")
+              .text("Temperature, ºF");
+
+          var city = line_svg.selectAll(".city")
+            .data(cities)
+            .enter().append("g")
+              .attr("class", "city")
+              .attr('id', d=>{
+                   console.log('pattern'+d.id)
+                  return 'pattern'+d.id;
+              });
+
+          city.append("path")
+              .attr("class", "line")
+              .attr("d", function(d) { return line(d.values); })
+              .style("stroke", function(d) { return z(d.id); });
+
+          city.append("text")
+              .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+              .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+              .attr("x", 3)
+              .attr("dy", "0.35em")
+              .style("font", "10px sans-serif")
+              .text(function(d) { return d.id; });
+        }
+
+        draw_all_lines(all_pattern_data);
+
+
+        function type(d, _, columns) {
+          d.date = parseTime(d.date);
+          for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
+          return d;
+        }
+
     }
-
 }
