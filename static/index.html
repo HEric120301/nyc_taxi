@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>NYC Taxi</title>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script> -->
+    <script src="lib/d3/d3.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    
+    <!-- load tether before loading bootstrap -->
+    <script src="lib/tether.min.js"></script> 
+    <!-- load jquery bebore loading bootstrap -->
+    <script src="lib/jquery/jquery-3.2.1.min.js"></script>
+    <!-- load bootstrap: js before css -->
+    <script src="lib/bootstrap/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+    <!-- bootstrap toggle -->
+    <link href="lib/bootstrap/bootstrap-toggle-master/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="lib/bootstrap/bootstrap-toggle-master/js/bootstrap-toggle.min.js"></script>
+
+    <!-- color legend -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.min.js"></script>
+
+
+  </head>
+<body>
+  <div id="choropleth_map">
+    <svg style="float:left"></svg>
+    <label class="checkbox-inline" style="float:left; position: absolute; left:40px; top:20px">
+      <input id="endpoint-event" type="checkbox" checked data-toggle="toggle" data-on="Start" data-off="End" data-onstyle="success" data-offstyle="info" >
+    </label>
+  </div>
+  <div id="line_plot">
+  </div>
+  <div id="chord_graph">
+  </div>
+  <div id="time_pattern">
+  </div>
+
+
+</body>
+</html>
+<script type="text/javascript" src="js/pattern_plot.js"></script>
+<script type="text/javascript" src="js/chord_graph.js"></script>
+
+<script>
+
+/*choropleth map*/
+var count_each_zone = {},
+    pudo_location = {'pick_up': '', 'drop_off': ''},
+    dragging = false,
+    current_zone = undefined,
+    show_st_or_end = 'pick_up',
+    lookup_dict = {};
+
+var travel_values = [];
+
+var width = 600,
+    height = 500,
+    centered;
+
+// Define color scale
+var color = d3.scalePow()
+    .exponent(0.4)
+    .domain([1, 20])
+    .clamp(true)
+    .range(['#fff', '#409A99']);
+
+var projection = d3.geoMercator()
+    .scale(40000)
+    // Center the Map in Colombia
+    .center([-74, 40.7])
+    .translate([width / 2, height / 2]);
+
+var path = d3.geoPath()
+    .projection(projection);
+
+// Set svg width & height
+var map_svg = d3.select('#choropleth_map svg')
+    .attr('width', width)
+    .attr('height', height);
+
+// Add background
+map_svg.append('rect')
+    .attr('class', 'background')
+    .attr('width', width)
+    .attr('height', height)
+    .on('click', clicked);
+
+var svg = map_svg.call(d3.zoom().on("zoom", function () {
+      svg.attr("transform", d3.event.transform)
+    })).append('g')
+var g = svg.append('g');
+
+var mapLayer = g.append('g')
+    .classed('map-layer', true);
+
+//add tip text
+var tip = map_svg.append('text')
+    .attr('x', 140)
+    .attr('y', 50)
+    .text('')
+    .attr('id', 'tip')
+    .attr('class', 'tip')
+
+// Load map data
+d3.json('data/count_each_zone.json', d=>{
+
+    count_each_zone = d;
+
+    d3.json('data/nyc.geo.json', (error, mapData)=>{
+        var features = mapData.features;
+
+        draw_map(features);
+        //toggle between two endpoints
+        $('#endpoint-event').change(function() {
+            if($(this).prop('checked')) show_st_or_end = 'pick_up'
+            else show_st_or_end = 'drop_off'
+            draw_map(features)
+        })
+        d3.json('data/id_name_lookDict.json', (error, lookup_json)=>{
+            lookup_dict = lookup_json;
+            draw_circos()
+
+        })  
+    });
+
+})
+
+function draw_map(features) {
+    // Update color scale domain based on data
+    color.domain([d3.min(features, zone_count), d3.max(features, zone_count)]);
+    // Draw each zone as a path
+    mapLayer.selectAll('path').remove()
+    mapLayer.selectAll('path').data(features)
+        .enter().append('path')
+        .attr('d', path)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('fill', fillFn)
+        .on('mouseover', mouseover)
+        .on('mouseout', mouseout)
+        .on('click', clicked)
+          .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+}
+
+function init_drag(d) {
+    mapLayer.selectAll('path').classed('start_zone', false)
+    mapLayer.selectAll('path').classed('end_zone', false)
+    pudo_location = {'pick_up': '', 'drop_off': ''};
+}
+
+function dragstarted(d) {
+    init_drag(d)
+    mapLayer.selectAll('path').style('cursor', 'pointer')
+    d3.select(this).classed('start_zone', true);
+    pudo_location['pick_up'] = d.properties.zone;
+    dragging = true;
+
+    var points = d3.mouse(this)
+    mapLayer.append('circle').attr('cx', points[0]).attr('cy', points[1]).attr('r', 5).attr('id', 'tip_point').classed('prompt_point_show', true)
+}
+
+function dragged(d) {
+    mapLayer.select('#tip_point')
+        .attr("cx", d=>{ return d3.mouse(this)[0]}).attr("cy", d=>{ return d3.mouse(this)[1]}).style('pointer-events','none')
+}
+
+function dragended(d) {
+    mapLayer.selectAll('path').style('cursor', 'default')
+    d3.select(current_zone).classed('end_zone', true)
+    dragging = false;
+ 
+    mapLayer.select("#tip_point").remove();
+
+    $.ajax({
+        type: 'POST',
+        url: '/travel_timegap',
+        data: JSON.stringify(pudo_location),
+        contentType: 'application/json;charset=UTF-8',
+        // cache: false,
+        // processData: false,
+        // async: false,
+        success: function(data) {
+            console.log('Success!');
+            parseTime_gap(data['values'], draw_timeplot)
+        },
+    });
+
+}
+
+function parseTime_gap(data, draw) {
+
+    //to delete abnormal record
+    var sum = 0,
+        avg = 0;
+    data.forEach(d=>{
+        sum+= +d.value
+    })
+    avg = 5*sum/data.length;
+
+    console.log(data)
+
+    //parse string to date 
+    travel_values = []
+    data.forEach(d=>{
+        d.date = parseDate(d.date);
+        d.value = +d.value;
+        if(d.value < avg) {
+          travel_values.push(d);
+        }
+    })
+
+    draw();
+}
+
+function mouseover(d){
+    // Highlight hovered zone
+    d3.select(this).style('fill', 'orange');
+    if(dragging) {
+      pudo_location['drop_off'] = d.properties.zone;
+    }
+
+    current_zone = this;
+
+    //show zone infor when hovering
+    d3.select('#tip').text(d.properties.zone + ': ' + zone_count(d))
+
+}
+
+function mouseout(d){
+    // Reset zone color
+    mapLayer.selectAll('path')
+        .style('fill', function(d){return centered && d===centered ? '#D5708B' : fillFn(d);});
+}
+
+// Get zone name length
+function zone_count(d){
+    return count_each_zone[d.properties.zone][show_st_or_end]
+}
+
+// Get zone color
+function fillFn(d){
+    return color(zone_count(d));
+}
+
+// When clicked, initial map
+function clicked(d) {
+    init_drag(d);
+    d3.select('#tip').text('')
+}
+
+
+
+/*line plot*/
+
+var margin = {top: 20, right: 20, bottom: 110, left: 50},
+    margin2 = {top: 430, right: 20, bottom: 30, left: 40},
+    width = 820 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    height2 = 500 - margin2.top - margin2.bottom;
+
+var line_svg = d3.select("#line_plot").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+var x = d3.scaleTime().range([0, width-margin.right]),
+    x2 = d3.scaleTime().range([0, width-margin.right]),
+    y = d3.scaleLinear().range([height, 0]),
+    y2 = d3.scaleLinear().range([height2, 0]),
+    x3 = d3.scaleTime().range([0, width-margin.right]),
+    y3 = d3.scaleLinear().range([height, 0]);
+
+var xAxis = d3.axisBottom(x),
+    xAxis2 = d3.axisBottom(x2),
+    yAxis = d3.axisLeft(y),
+    xAxis3 = d3.axisTop(x3),
+    yAxis3 = d3.axisRight(y3);
+
+var focus = line_svg.append("g")
+    .attr("class", "focus")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var context = line_svg.append("g")
+    .attr("class", "context")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+context.append("rect")
+    .attr("class", "grid-background")
+    .attr("width", width)
+    .attr("height", height);
+
+context.append('rect')
+    .attr('class', 'align-pad')
+    .attr('width', width)
+    .attr('height', height2)
+    .attr("transform", "translate(0," + height2 + ")")
+    .attr('fill', 'lightblue')
+    .on('click', align_brush)
+
+
+// generate a SVG group to keep our brushes' DOM elements in:
+var gBrushes = context.append('g')
+    .attr("class", "brushes");
+
+// keep the actual d3-brush functions and their IDs in a list:
+var brushes = [],
+    brush_count = 0
+
+newBrush();
+drawBrushes();
+
+/* CREATE NEW BRUSH */
+function newBrush() {
+    var brush = d3.brushX().extent([[0, 0], [width, height2]])
+        .on("brush", brushed)
+        .on("end", brushend);
+
+    if(brushes.length<2) {
+        brushes.push({id: brushes.length, brush: brush});
+    }
+    brush_count += 1
+}
+
+function drawBrushes() {
+
+    
+    var brushSelection = gBrushes
+        .selectAll('.brush')
+        .data(brushes, function (d){return d.id});
+
+    // Set up new brushes
+    brushSelection.enter()
+        .insert("g", '.brush')
+        .attr('class', 'brush')
+        .attr('id', function(brush){ return "brush-" + brush.id; })
+        .each(function(brushObject) {
+          //call the brush
+          brushObject.brush(d3.select(this));
+        });
+
+    brushSelection
+        .each(function (brushObject){
+    d3.select(this)
+        .attr('class', 'brush')
+        .selectAll('.overlay')
+        .style('pointer-events', function() {
+            var brush = brushObject.brush;
+            if (brushObject.id === brushes.length-1 && brush !== undefined) {
+                return 'all';
+            }
+            else {
+            return 'none';
+            }
+        });
+    })
+
+    brushSelection.exit()
+        .remove();
+}
+
+function align_brush() {
+    //fix the selection of the second brush to the first one's
+    if(brush_count>=3) {
+        var selection0 = d3.brushSelection(d3.select('.brush#brush-0').node()),
+            selection1 = d3.brushSelection(d3.select('.brush#brush-1').node());
+        brushes[1].brush.move(d3.select('.brush#brush-1'), [selection1[0], selection1[0]+(selection0[1]-selection0[0])])
+    }
+}
+
+function draw_timeplot(data) {
+
+    focus.selectAll('*').remove();
+    focus.select('text').remove();
+    focus.selectAll('circle')
+    context.selectAll('.axis').remove();
+    line_svg.select('text').remove();
+
+    data = travel_values
+
+
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
+    x2.domain(x.domain());
+    y2.domain(y.domain());
+    x3.domain(x.domain());
+    y3.domain(y.domain());
+
+// append scatter plot to main chart area 
+    var dots = focus.append("g");
+    dots.attr("clip-path", "url(#clip)");
+    dots.selectAll("dot")
+        .data(data)
+        .enter().append("circle")
+        .attr('class', 'dot')
+        .attr("r",2)
+        .attr('fill', 'red')
+        .style("opacity", .5)
+        .attr("cx", function(d) { return x(d.date); })
+        .attr("cy", function(d) {
+              return y(d.value); })
+     
+    // console.log(data)
+
+    var dots2 = focus.append("g");
+    dots.attr("clip-path", "url(#clip)");
+    dots.selectAll("dot2")
+        .data(data)
+        .enter().append("circle")
+        .attr('class', 'dot2')
+        .attr("r",2)
+        .attr('fill', 'blue')
+        .style("opacity", .5)
+        .attr("cx", function(d) { return x3(d.date); })
+        .attr("cy", function(d) { return y3(d.value); })
+
+    focus.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    focus.append("g")
+        .attr("class", "axis axis--y")
+        .call(yAxis);
+     
+    focus.append("g")
+        .attr("class", "axis axis--x3")
+        .attr("transform", "translate(0, 0)")
+        .call(xAxis3);
+
+    focus.append("g")
+        .attr("class", "axis axis--y3")
+        .attr("transform", "translate(" + (width-margin.right)+ "," + 0 + ")")
+        .call(yAxis3);
+
+    focus.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("time consumed");  
+      
+    line_svg.append("text")             
+        .attr("transform",
+            "translate(" + ((width + margin.right + margin.left)/2) + " ," + 
+                           (height + margin.top + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .text("Time");
+      
+// append scatter plot to brush chart area      
+    var dots = context.append("g");
+    dots.attr("clip-path", "url(#clip)");
+    dots.selectAll("dot")
+        .data(data)
+        .enter().append("circle")
+        .attr('class', 'dotContext')
+        .attr("r",1)
+        .style("opacity", .5)
+        .attr("cx", function(d) { return x2(d.date); })
+        .attr("cy", function(d) { return y2(d.value); })
+        
+    context.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height2 + ")")
+        .call(xAxis2);
+
+}
+
+//create brush function redraw scatterplot with selection
+function brushed() {
+    var selection = d3.event.selection;
+    var id = d3.select(this).attr('id');
+    if(id=='brush-0') {
+        x.domain(selection.map(x2.invert, x2));
+        focus.selectAll(".dot")
+            .attr("cx", function(d) { return x(d.date); })
+            .attr("cy", function(d) { return y(d.value); });
+        focus.select(".axis--x").call(xAxis);
+    }
+    else {
+        x3.domain(selection.map(x2.invert, x2));
+        focus.selectAll(".dot2")
+            .attr("cx", function(d) { return x3(d.date); })
+            .attr("cy", function(d) { return y3(d.value); });
+        focus.select(".axis--x3").call(xAxis3);
+    }
+}
+
+function brushend() {
+
+// Figure out if our latest brush has a selection
+    var lastBrushID = brushes[brushes.length - 1].id;
+    var lastBrush = document.getElementById('brush-' + lastBrushID);
+    var selection = d3.brushSelection(lastBrush);
+
+    // If it does, that means we need another one
+    if (selection && selection[0] !== selection[1]) {
+      newBrush();
+    }
+    // Always draw brushes
+    drawBrushes();
+}
+
+
+
+
+//draw time_pattern plot
+
+pattern_plot()
+
+
+</script>
