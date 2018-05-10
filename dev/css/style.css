@@ -1,0 +1,252 @@
+.background {
+  fill: #eee;
+  pointer-events: all;
+}
+
+.map-layer {
+  fill: #fff;
+  stroke: #aaa;
+}
+
+text{
+  /*font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;*/
+  /*font-weight: 300;*/
+}
+
+text.big-text{
+  font-size: 30px;
+  /*font-weight: 400;*/
+}
+
+.prompt_point_show{
+  fill: white;
+  opacity: 50%;
+  stroke-width:2px;
+  stroke: lightblue
+}
+
+.start_zone, .end_zone{
+  stroke: #ef8a62;
+  stroke-width: 4px;
+  fill: orange;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+
+.grid-background {
+  fill: #eee;
+}
+
+.grid line,
+.grid path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+#brush-0 .selection {
+  stroke: #000;
+  fill: red;
+}
+#brush-1 .selection {
+  stroke: #000;
+  fill: blue;
+}
+
+.axisyRed line{
+  stroke: red;
+}
+
+.axisyRed path{
+  stroke: red;
+}
+
+.axisyRed text{
+  fill: red;
+}
+
+.axisxRed line{
+  stroke: red;
+}
+
+.axisxRed path{
+  stroke: red;
+}
+
+.axisxRed text{
+  fill: red;
+}
+
+.axisyBlue line{
+  stroke: blue;
+}
+
+.axisyBlue path{
+  stroke: blue;
+}
+
+.axisyBlue text{
+  fill: blue;
+}
+
+.axisxBlue line{
+  stroke: blue;
+}
+
+.axisxBlue path{
+  stroke: blue;
+}
+
+.axisxBlue text{
+  fill: blue;
+}
+
+/*pattern plot*/
+.highlight {
+   stroke-width: 2;
+   stroke: #ffff99;
+}
+
+
+
+
+/*pie chart*/
+.tip {
+  
+}
+
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+.toolTip {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: absolute;
+    display: none;
+    width: auto;
+    height: auto;
+    background: none repeat scroll 0 0 white;
+    border: 0 none;
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: -3px 3px 15px #888888;
+    color: black;
+    font: 12px sans-serif;
+    padding: 5px;
+    text-align: center;
+}
+
+
+
+
+/*nav bar*/
+div.tab {
+    overflow: hidden;
+    background-color: #e3eefe;
+    border-radius: 4px;
+    border: 1px solid lightgray;
+    /*margin: 10px;*/
+}
+
+/* Style the buttons inside the tab */
+div.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    
+    position: absolute; 
+    display: none;
+    margin: 30px;
+/*    border: 1px solid #ccc;
+    border-top: none;
+*/
+}
+
+
+#welcome_page {
+    width: 100%;
+}
+
+/* For mobile phones: */
+[class*="col-"] {
+    width: 100%;
+}
+@media only screen and (min-width: 768px) {
+    /* For desktop: */
+    .col-1 {width: 8.33%;}
+    .col-2 {width: 16.66%;}
+    .col-3 {width: 25%;}
+    .col-4 {width: 33.33%;}
+    .col-5 {width: 41.66%;}
+    .col-6 {width: 50%;}
+    .col-7 {width: 58.33%;}
+    .col-8 {width: 66.66%;}
+    .col-9 {width: 75%;}
+    .col-10 {width: 83.33%;}
+    .col-11 {width: 91.66%;}
+    .col-12 {width: 100%;}
+}
+
+.hovertitle {
+    position: relative;
+    display: inline-block;
+    /*border-bottom: 1px dotted black;*/
+}
+
+.hovertitle .hoverlabel {
+    font: 12px sans-serif;
+    visibility: hidden;
+    width: 400px;
+    padding: 1px 4px;
+    position: absolute;
+    z-index: 1;
+    bottom: 120%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 1s;
+    /*border-color: #555;*/
+    /*border-width: 2px;*/
+}
+
+.hovertitle .hoverlabel::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 15%;
+    margin-left: -5px;
+}
+
+.hovertitle:hover .hoverlabel {
+    visibility: visible;
+    opacity: 1;
+}
+

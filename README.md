@@ -1,6 +1,8 @@
-# nyc_taxi
 
-URL For the System:
-  http://nyc-env26.zu8fabya3y.us-west-2.elasticbeanstalk.com/static/index.html
 
-new york taxi data analysis
+Proj Demo URL: http://www-scf.usc.edu/~qingfenh/dev
+
+Proj Youtube Video: https://youtu.be/V1NjvY_vBxQ
+
+Instruction: 
+    Install node.js and run "http-server" to run the local server.

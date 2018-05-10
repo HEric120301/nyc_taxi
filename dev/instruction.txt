@@ -1,0 +1,10 @@
+Instruction                        
+
+    New York City choropleth map. The traffic of each zone is encoded into opacity from 0 to 1. When the button shows "Start", traffic means number of pickup in the current zone, and when it shows "End", traffic means number of dropoff in the current zone. You can toggle between them by clicking the button and when hovering on each zone, the name of the zone and the trsffic would show to the right of the button. And you can also drag one zone A to zone B - this would trigger an event that draw the time series of traffic from A to B.
+
+
+    Scatter plot. that shows the traffic from one zone to another. The two zones are chosen in choropleth map. There are two brushes provided for you to chooose two time period and find the difference. The left y axis and the bottom x axis are for the red brush, which is the default brush(when clicking the blue rectangle at the bottom, the blue brush will adjust its width and become the same as the red one's)
+
+    Chord graph. shows the traffic between the top 10 zones with the most traffic. Each ribbon shows the traffic between two zones. As we can see, each ribbon has two ends, and each end encodes the traffic from this end to the other into its width. When hovering on the ribbon, the traffic information will show to the top-left of the graph, and by clicking the arc, the traffic starting from the current zone will show.
+
+    Pie Chart.Choose an area to see the number of pickups happened in it, and check the distribution of pickups in one day. Put your mouse on a curve to see the detail.
